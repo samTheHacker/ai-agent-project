@@ -3,6 +3,8 @@ from dotenv import load_dotenv
 from openai import OpenAI
 import argparse 
 from prompts import system_prompt  
+from call_function import available_functions
+import json
 
 def main():
     parser = argparse.ArgumentParser(description="AI Code Assistant")
@@ -33,6 +35,7 @@ def generate_content(client: OpenAI, messages: list, args) -> None:
     response = client.chat.completions.create(
         model="openrouter/free",
         messages=messages,
+        tools=available_functions,
     )
     if not response.usage:
         raise RuntimeError("API response appears to be malformed")
@@ -41,6 +44,13 @@ def generate_content(client: OpenAI, messages: list, args) -> None:
         print("User prompt:", args.user_prompt)
         print("Prompt tokens:", response.usage.prompt_tokens)
         print("Response tokens:", response.usage.completion_tokens)
+
+    message = response.choices[0].message
+    
+    if message.tool_calls:
+        for tool_call in message.tool_calls:
+            function_args = json.loads(tool_call.function.arguments or "{}")
+            print(f"Calling function: {tool_call.function.name}({function_args})")
         
     print("Response:")
     print(response.choices[0].message.content)
