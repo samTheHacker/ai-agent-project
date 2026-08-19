@@ -1,7 +1,8 @@
 import os
 from dotenv import load_dotenv
 from openai import OpenAI
-import argparse  
+import argparse 
+from prompts import system_prompt  
 
 def main():
     parser = argparse.ArgumentParser(description="AI Code Assistant")
@@ -20,6 +21,7 @@ def main():
     api_key=api_key,)
     
     messages = [
+        {"role": "system", "content": system_prompt},
         {"role": "user", "content": args.user_prompt},
     ]
     
